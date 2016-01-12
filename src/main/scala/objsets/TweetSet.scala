@@ -77,7 +77,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def descendingByRetweet: TweetList = ???
+    def descendingByRetweet: TweetList
   
   /**
    * The following methods are already implemented
@@ -130,6 +130,8 @@ class Empty extends TweetSet {
   def union(that: TweetSet): TweetSet = that
   
   def isEmpty: Boolean = true
+  
+  def descendingByRetweet: TweetList = Nil
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
@@ -180,6 +182,11 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     if(!left.isEmpty) maxRetweets(elem, left.mostRetweeted)
     else if(!right.isEmpty) maxRetweets(elem, right.mostRetweeted)
     else elem
+  }
+  
+  def descendingByRetweet: TweetList = {
+    new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
+    
   }
   
 }
@@ -238,6 +245,10 @@ object Main extends App {
   println("")
   println("Most Retweets")
   println(ts4.mostRetweeted)
+  
+  println("")
+  println("Descending Most Retweets")
+  ts4.descendingByRetweet.foreach(t => println(t))
   
   println("")
   println("Union")

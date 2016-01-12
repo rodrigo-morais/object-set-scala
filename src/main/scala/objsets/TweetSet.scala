@@ -66,7 +66,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def mostRetweeted: Tweet = ???
+    def mostRetweeted: Tweet
   
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -105,11 +105,15 @@ abstract class TweetSet {
    * This method takes a function and applies it to every element in the set.
    */
   def foreach(f: Tweet => Unit): Unit
+  
+  def isEmpty: Boolean
 }
 
 class Empty extends TweetSet {
   
     def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
+    
+    def mostRetweeted: Tweet = throw new NoSuchElementException("Empty Tweet Set")
   
   /**
    * The following methods are already implemented
@@ -124,6 +128,8 @@ class Empty extends TweetSet {
   def foreach(f: Tweet => Unit): Unit = ()
   
   def union(that: TweetSet): TweetSet = that
+  
+  def isEmpty: Boolean = true
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
@@ -161,6 +167,20 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   
   def union(that: TweetSet): TweetSet = 
     ((left union right) union that) incl elem
+    
+  def isEmpty: Boolean = false
+    
+  def mostRetweeted: Tweet = {
+    def maxRetweets(first: Tweet, second: Tweet): Tweet = {
+      if(first.retweets >= second.retweets) first
+      else second
+    }
+    
+    if(!left.isEmpty && !right.isEmpty) maxRetweets(elem, maxRetweets(left.mostRetweeted, right.mostRetweeted))
+    if(!left.isEmpty) maxRetweets(elem, left.mostRetweeted)
+    else if(!right.isEmpty) maxRetweets(elem, right.mostRetweeted)
+    else elem
+  }
   
 }
 
@@ -214,6 +234,10 @@ object Main extends App {
   val ts4 = ts3.incl(t4)
    
   ts4.filter(t => t.retweets > 10).foreach(t => println(t))
+  
+  println("")
+  println("Most Retweets")
+  println(ts4.mostRetweeted)
   
   println("")
   println("Union")
